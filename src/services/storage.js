@@ -16,8 +16,12 @@ function getClient() {
 }
 
 const bucket = () => process.env.MINIO_BUCKET || 'listings-photos';
-const publicBase = () =>
-  `http://${process.env.MINIO_ENDPOINT || 'localhost'}:${process.env.MINIO_PORT || '9000'}/${bucket()}`;
+const publicBase = () => {
+  const base = process.env.MINIO_PUBLIC_URL
+    ? process.env.MINIO_PUBLIC_URL.replace(/\/$/, '')
+    : `http://${process.env.MINIO_ENDPOINT || 'localhost'}:${process.env.MINIO_PORT || '9000'}`;
+  return `${base}/${bucket()}`;
+};
 
 export async function ensureBucket() {
   const c = getClient();

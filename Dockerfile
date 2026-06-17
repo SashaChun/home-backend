@@ -1,13 +1,19 @@
-FROM node:22-alpine
+# ── Stage 1: install production dependencies ─────────────────────────────────
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
 
+# ── Stage 2: minimal production runner ───────────────────────────────────────
+FROM node:22-alpine AS runner
 WORKDIR /app
 
-COPY package*.json ./
+RUN addgroup -S app && adduser -S -G app app
 
-RUN npm install --production
+COPY --chown=app:app --from=deps /app/node_modules ./node_modules
+COPY --chown=app:app src ./src
+COPY --chown=app:app package.json ./
 
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
+USER app
+EXPOSE 4000
+CMD ["node", "src/server.js"]
