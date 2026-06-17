@@ -9,6 +9,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 RUN addgroup -g 10001 -S app && adduser -u 10001 -S -G app app
+# We only run `node` at runtime — drop the bundled npm (and its transitive CVEs)
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 COPY --chown=app:app --from=deps /app/node_modules ./node_modules
 COPY --chown=app:app src ./src
